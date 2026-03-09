@@ -3,6 +3,10 @@ import uuid
 from kafka import KafkaConsumer
 from minio import Minio
 from io import BytesIO
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # Kafka consumer
 consumer = KafkaConsumer(
@@ -15,8 +19,8 @@ consumer = KafkaConsumer(
 # MinIO client
 minio_client = Minio(
     "localhost:9000",
-    access_key="admin",
-    secret_key="password123",
+    access_key=os.getenv("MINIO_USER"),
+    secret_key=os.getenv("MINIO_PASSWORD"),
     secure=False
 )
 
