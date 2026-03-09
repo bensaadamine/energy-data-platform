@@ -1,0 +1,152 @@
+
+Project Context
+
+We are working on a semester project for a Data Engineering course. The objective of the project is to design and implement a complete Data Architecture for a company’s information system. The project must demonstrate key data engineering concepts such as data ingestion, streaming pipelines, batch processing, data lakes, data warehouses, orchestration, and data visualization. The entire system must run locally (no cloud services) because we do not have cloud credits.
+
+We are a team of 3 students and the project should result in a working Proof of Concept (POC) that demonstrates the architecture and pipelines.
+
+Project Theme
+
+Our project simulates a fictional company that provides insights about natural energy resources such as oil and natural gas .... The company collects information from multiple data sources (APIs, datasets, and news feeds) and analyzes the data to generate insights about energy markets, including price trends, supply distribution, and correlations with energy-related news.
+
+The goal is to build an Energy Market Intelligence Data Platform capable of ingesting, storing, processing, and analyzing energy data.
+
+Project Objectives
+
+The system should be able to:
+
+* Collect energy-related data from different sources.
+* Process both streaming and batch data pipelines.
+* Store raw data in a Data Lake.
+* Transform and store structured data in a Data Warehouse.
+* Generate analytical insights about energy markets.
+* Visualize the results using dashboards.
+
+Data Sources
+
+The platform will use multiple heterogeneous data sources.
+
+Streaming-like sources (periodically polled APIs):
+
+* Energy price data from the EIA (Energy Information Administration) API.
+* Commodity price APIs (oil or natural gas prices).
+* Energy-related news through RSS feeds (for example OilPrice.com or Reuters Energy).
+
+Batch sources:
+
+* Historical energy datasets from Kaggle.
+* EIA datasets such as crude oil imports, production statistics, or consumption data.
+* World Bank energy datasets.
+
+Architecture Overview
+
+The system will implement a modern data platform architecture.
+
+Data Sources
+(APIs, RSS feeds, datasets)
+
+→ Data Ingestion
+Python scripts will extract data. Streaming data will be pushed to Kafka producers.
+
+→ Streaming Layer
+Apache Kafka will act as the real-time data streaming platform with topics such as:
+
+* energy_prices
+* energy_news
+
+→ Data Lake
+MinIO will store raw data (JSON, CSV) as the Data Lake.
+
+→ Data Processing
+Python processing scripts (or optionally Spark) will clean and transform data from the Data Lake.
+
+→ Data Warehouse
+PostgreSQL will store structured analytical tables optimized for querying.
+
+→ Orchestration
+prefect will schedule pipelines and ETL jobs.
+
+→ Visualization
+Metabase will connect to PostgreSQL to create analytical dashboards.
+
+Example Pipelines
+
+Streaming pipeline example:
+
+Energy Price API
+→ Python Producer
+→ Kafka Topic (energy_prices)
+→ Consumer
+→ Data Lake (MinIO)
+
+News pipeline example:
+
+Energy News RSS
+→ Python Scraper
+→ Kafka Topic (energy_news)
+→ Consumer
+→ Data Lake
+
+Batch pipeline example:
+
+Energy Datasets (Kaggle / EIA)
+→ Batch ETL Python
+→ Data Lake
+→ Data Warehouse
+
+Example Insights Generated
+
+The platform should provide dashboards showing insights such as:
+
+* Evolution of oil and natural gas prices over time.
+* Distribution of oil imports or production by country.
+* Correlation between energy-related news and commodity price changes.
+* Detection of unusual price volatility or supply changes.
+
+Technology Stack
+
+The entire system must run locally using Docker Compose.
+
+Main technologies include:(we will be using stable versions and not necessarly the latest to avoid any incompatibility between services)
+
+* Python for data ingestion and processing
+* Apache Kafka(kraft) for streaming pipelines
+* MinIO for Data Lake storage
+* PostgreSQL as the Data Warehouse
+*prefect for pipeline orchestration
+* Metabase for dashboards
+* Docker Compose to deploy the infrastructure
+
+Proof of Concept (POC)
+
+The minimum POC should demonstrate the following working pipeline:
+
+Energy Price API
+→ Kafka Producer
+→ Kafka Topic
+→ Consumer
+→ Data Lake (MinIO)
+→ Transformation
+→ PostgreSQL Data Warehouse
+→ Metabase Dashboard
+
+Project Organization
+
+The project is managed using Agile Scrum.
+
+Sprint 0 includes:
+
+* defining the project vision
+* selecting the data sources
+* designing the architecture
+* creating the product backlog
+* assigning roles to team members
+
+Future sprints will focus on implementing the pipelines, processing logic, and dashboards.
+act as a senior data engeneer and help us complete this project .
+
+note: do not use infos from other chats 
+avoid using bitnami because i recently found some problems with it.
+
+
+
