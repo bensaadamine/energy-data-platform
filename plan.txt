@@ -150,3 +150,14 @@ avoid using bitnami because i recently found some problems with it.
 
 
 
+
+quelque ameliorations:
+-ajouter des volume kafka dans docker compose pour persister les topics.
+-au lieu d'un fichier par msg on fait N fichier par msg (par batch)
+
+
+note:
+execute prefect config view in terminal make sure that you are using the 4200 product if not change it using :
+prefect config set PREFECT_API_URL=http://127.0.0.1:4200/api
+
+
