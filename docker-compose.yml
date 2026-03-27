@@ -9,10 +9,17 @@ services:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT_HOST://:9092,PLAINTEXT_INTERNAL://:29092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT_HOST://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT_HOST:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - energy-net
 
   minio:
     image: minio/minio
@@ -26,6 +33,29 @@ services:
     command: server /data --console-address ":9001"
     volumes:
       - ./data/minio:/data
+    networks:
+      - energy-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio-init:
+    image: minio/mc
+    container_name: minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 admin password123;
+      mc mb --ignore-existing local/energy-raw;
+      mc mb --ignore-existing local/energy-processed;
+      echo 'Buckets energy-raw et energy-processed OK';
+      "
+    networks:
+      - energy-net
 
   postgres:
     image: postgres:15
@@ -38,16 +68,49 @@ services:
       - "5432:5432"
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
+      - ./services/etl/init.sql:/docker-entrypoint-initdb.d/init.sql  # ← table créée au démarrage
+    networks:
+      - energy-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U energy_user -d energy_warehouse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   prefect:
     image: prefecthq/prefect:2-latest
-    container_name: prefect
+    container_name: prefect-server
     command: prefect server start --host 0.0.0.0
     ports:
       - "4200:4200"
+    networks:
+      - energy-net
+
+  prefect-agent:
+    image: prefecthq/prefect:2-latest
+    container_name: prefect-agent
+    command: prefect agent start -q default
+    environment:
+      PREFECT_API_URL: http://prefect-server:4200/api
+    depends_on:
+      - prefect
+    networks:
+      - energy-net
 
   metabase:
     image: metabase/metabase
     container_name: metabase
     ports:
       - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - energy-net
+
+networks:
+  energy-net:
+    driver: bridge
+
+volumes:
+  kafka_data:

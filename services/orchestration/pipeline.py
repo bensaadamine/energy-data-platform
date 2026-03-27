@@ -1,32 +1,31 @@
 from prefect import flow, task
-import subprocess
-import sys
 
-@task
-def run_producer():
-    print("Running EIA → Kafka producer")
-    subprocess.run([sys.executable, "services/producers/producer.py"], check=True)
-
-@task
-def run_kafka_to_minio():
-    print("Running Kafka → MinIO batch consumer")
-    subprocess.run([sys.executable, "services/consumers/kafka_to_minio_batch.py"], check=True)
+from services.producers.producer import run_producer
+from services.consumers.kafka_to_minio_batch import run_kafka_to_minio_batch
+from services.etl.minio_to_postgres import run_minio_to_postgres
 
 
 @task
-def run_minio_to_postgres():
-    print("Running MinIO → PostgreSQL ETL")
-    subprocess.run([sys.executable, "services/etl/minio_to_postgres.py"], check=True)
+def producer_task():
+    run_producer()
+
+
+@task
+def kafka_to_minio_task():
+    run_kafka_to_minio_batch()
+
+
+@task
+def etl_task():
+    run_minio_to_postgres()
 
 
 @flow
 def energy_pipeline():
 
-    run_producer()
-
-    run_kafka_to_minio()
-
-    run_minio_to_postgres()
+    producer_task()
+    kafka_to_minio_task()
+    etl_task()
 
 
 if __name__ == "__main__":
