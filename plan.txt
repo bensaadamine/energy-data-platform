@@ -161,3 +161,4 @@ execute prefect config view in terminal make sure that you are using the 4200 pr
 prefect config set PREFECT_API_URL=http://127.0.0.1:4200/api
 
 
+python -m services.orchestration.pipeline
