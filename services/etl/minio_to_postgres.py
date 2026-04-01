@@ -45,9 +45,43 @@ def insert_commodity(cur, rec):
         ON CONFLICT (commodity, date) DO NOTHING
     """, (rec["commodity"], rec["date"], rec["price"], rec["unit"]))
 
+def insert_news(cur, rec):
+    cur.execute("""
+        INSERT INTO energy_news (title, source_name, published_at, url, content)
+        VALUES (%s, %s, %s, %s, %s)
+        ON CONFLICT (url) DO NOTHING
+    """, (
+        rec["title"],
+        rec["source_name"],
+        rec["published_at"],
+        rec["url"],
+        rec.get("content")
+    ))
+
+def insert_energy_global(cur, rec):
+    cur.execute("""
+        INSERT INTO energy_global (
+            country, year, population, gdp,
+            oil_consumption, gas_consumption,
+            energy_consumption, co2_emissions
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+    """, (
+        rec.get("country"),
+        rec.get("year"),
+        rec.get("population"),
+        rec.get("gdp"),
+        rec.get("oil_consumption"),
+        rec.get("gas_consumption"),
+        rec.get("energy_consumption"),
+        rec.get("co2_emissions")
+    ))
+
 INSERT_FN = {
     "energy_prices":        insert_energy_price,
     "commodity_spot_prices": insert_commodity,
+    "energy_news": insert_news,
+    "energy_global": insert_energy_global,
 }
 
 def process_file(minio_client, conn, fname):

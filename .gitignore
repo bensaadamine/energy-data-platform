@@ -8,5 +8,7 @@ __pycache__/
 
 data/postgres/
 data/minio/
+data/owid-energy-data.csv
+data/Petrol.csv
 
 *.log

@@ -15,7 +15,7 @@ log = logging.getLogger("kafka_to_minio")
 def run_kafka_to_minio_batch(topics=None):
     load_dotenv()
     if topics is None:
-        topics = ["energy_prices", "commodity_spot_prices"]
+        topics = ["energy_prices", "commodity_spot_prices","energy_news","energy_global"]  
 
     KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "127.0.0.1:9092")
     MINIO_ENDPOINT  = os.getenv("MINIO_ENDPOINT", "127.0.0.1:9000")
